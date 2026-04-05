@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: finance_dashboard
+      POSTGRES_USER: zorvyn
+      POSTGRES_PASSWORD: zorvyn2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zorvyn -d finance_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finance_dashboard
+      SPRING_DATASOURCE_USERNAME: zorvyn
+      SPRING_DATASOURCE_PASSWORD: zorvyn2026
+      JWT_SECRET: zorvyn-finance-dashboard-jwt-secret-2026
+      JWT_EXPIRATION: 86400000
+      SPRING_PROFILES_ACTIVE: seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
